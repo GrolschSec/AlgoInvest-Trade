@@ -1,89 +1,93 @@
-from random import randint
+from itertools import permutations
 from sys import argv, exit
 from pandas import read_csv
 
 
 class Bruteforce:
-    def __init__(self, var):
+    def __init__(self, file_csv):
         self.wallet = 500
         self.list = []
-        self.data = read_csv(var)
+        self.data = read_csv(file_csv, names=["Share", "Price", "Profit"], header=0)
+        self.dico = {}
+        self.best_profit = 0
+        self.best_investment = 0
 
-    def compare(self, last_share_option):
-        if last_share_option in self.list:
-            return True
-        return False
-
-    def select_share(self, share_list):
-        size = len(self.data)
-        share = None
-        i = 0
-        while share is None:
-            num = randint(0, size - 1)
-            if num not in share_list:
-                share = num
-                return share
-            if i >= size:
-                break
+    def generate_bruteforce_list(self):
+        i = 1
+        while i != len(self.data):
+            perm = list(permutations(self.data.index, i))
+            self.remove_duplicates(perm)
             i += 1
-        return None
 
-    def gen_share_option(self):
-        share_list = []
-        is_done = False
-        while not is_done:
-            result = self.select_share(share_list)
-            if result is None:
-                is_done = True
-            else:
-                share_list.append(result)
-        return share_list
+    def migrate_list_elements(self, res):
+        for elm in res:
+            self.list.append(elm)
 
-    def gen_share_list(self):
-        i = 0
-        while True:
-            share_option = self.gen_share_option()
-            comp = self.compare(share_option)
-            if not comp:
-                self.list.append(share_option)
-                i += 1
-                break
+    def remove_duplicates(self, perm):
+        new_list = []
+        for elm in perm:
+            new_list.append(list(elm))
+        for elm in new_list:
+            elm.sort()
+        res = []
+        [res.append(x) for x in new_list if x not in res]
+        self.migrate_list_elements(res)
 
-    def remove_duplicates(self):
-        pass
+    def get_money_invested(self, shares):
+        price = 0
+        for elm in shares:
+            price += int(self.data["Price"][elm])
+        return price
 
     def remove_constraint_overflow(self):
-        pass
+        for elm in self.list:
+            total_price = self.get_money_invested(elm)
+            if total_price < 500:
+                self.dico.update({self.list.index(elm): [total_price]})
+
+    def calculate_single_profit(self, elm):
+        price = self.data['Price'].loc[elm]
+        profit_percent = self.data['Profit'].loc[elm]
+        profit = (price * ((profit_percent / 100) + 1)) - price
+        return profit
+
+    def calculate_total_profit(self, index):
+        total_profit = 0
+        for elm in self.list[index]:
+            profit = self.calculate_single_profit(elm)
+            total_profit += profit
+            self.update_dico(index, profit)
+        self.update_dico(index, total_profit)
+        return total_profit
+
+    def update_dico(self, index, profit):
+        new_list = self.dico[index]
+        new_list.append(profit)
+        self.dico.update({index: new_list})
 
     def find_best_investment(self):
-        pass
+        self.best_investment = None
+        for key in self.dico.keys():
+            profit = self.calculate_total_profit(key)
+            if profit > self.best_profit:
+                self.best_profit = profit
+                self.best_investment = key
 
-    def gen_report(self):
+    def generate_report(self):
         pass
 
     def force(self):
-        self.gen_share_list()
-        self.remove_duplicates()
+        self.generate_bruteforce_list()
         self.remove_constraint_overflow()
         self.find_best_investment()
-        self.gen_report()
+        self.generate_report()
 
 
 if __name__ == "__main__":
-    if len(argv) != 2:
-        print("Usage: ./bruteforce.py <file.csv>")
-        exit(1)
-    else:
-        brute = Bruteforce(argv[1])
-        brute.force()
-        exit(0)
-
-# Creer une classe share list
-# Ou une classe Wallet
-# Calculer le nombre de permutations possible et les ajouter a une premiere liste
-# Trier chaque permutations du plus petit au plus grand
-# Supprimer les doublons
-# Pour chaque permutations calculer si elle depasse les 500 du wallet
-# Si la permutations depasse les 500 elle est supprimer de la liste.
-# Sinon On calculera le revenu de la permutations.
-#   Si le revenu est le plus grand recontrer on stockera son id.
+    # if len(argv) != 2:
+    #     print("Usage: ./bruteforce.py <file.csv>")
+    #     exit(1)
+    # else:
+    brute = Bruteforce("./share2.csv")
+    brute.force()
+    exit(0)
