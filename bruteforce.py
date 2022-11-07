@@ -1,6 +1,6 @@
 from itertools import permutations
 from sys import argv, exit
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 
 
 class Bruteforce:
@@ -17,6 +17,7 @@ class Bruteforce:
         while i != len(self.data):
             perm = list(permutations(self.data.index, i))
             self.remove_duplicates(perm)
+            print(f"Generated {len(self.list)} Combination !")
             i += 1
 
     def migrate_list_elements(self, res):
@@ -46,8 +47,8 @@ class Bruteforce:
                 self.dico.update({self.list.index(elm): [total_price]})
 
     def calculate_single_profit(self, elm):
-        price = self.data['Price'].loc[elm]
-        profit_percent = self.data['Profit'].loc[elm]
+        price = self.data["Price"].loc[elm]
+        profit_percent = self.data["Profit"].loc[elm]
         profit = (price * ((profit_percent / 100) + 1)) - price
         return profit
 
@@ -74,7 +75,32 @@ class Bruteforce:
                 self.best_investment = key
 
     def generate_report(self):
-        pass
+        shares_index = self.list[self.best_investment]
+        other_data = self.dico[self.best_investment]
+        df = DataFrame(
+            columns=[
+                "Share",
+                "Price",
+                "Profit after 2 years (percent)",
+                "Profit after 2 years (values)",
+            ]
+        )
+        i = 1
+        for share in shares_index:
+            df.loc[len(df)] = [
+                self.data["Share"].iloc[share],
+                self.data["Price"].iloc[share],
+                self.data["Profit"].iloc[share],
+                other_data[i],
+            ]
+            i += 1
+        df.loc[len(df)] = [
+            "Total cost",
+            other_data[0],
+            "Total profit",
+            other_data[len(other_data) - 1],
+        ]
+        df.to_csv("Best-Investment.csv")
 
     def force(self):
         self.generate_bruteforce_list()
@@ -84,10 +110,10 @@ class Bruteforce:
 
 
 if __name__ == "__main__":
-    # if len(argv) != 2:
-    #     print("Usage: ./bruteforce.py <file.csv>")
-    #     exit(1)
-    # else:
-    brute = Bruteforce("./share2.csv")
-    brute.force()
-    exit(0)
+    if len(argv) != 2:
+        print("Usage: ./bruteforce.py <file.csv>")
+        exit(1)
+    else:
+        brute = Bruteforce(argv[1])
+        brute.force()
+        exit(0)
