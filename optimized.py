@@ -1,6 +1,5 @@
 from pandas import DataFrame, read_csv
 from sys import exit, argv
-from mimetypes import read_mime_types, guess_type
 
 
 class Optimized:
@@ -22,10 +21,10 @@ class Optimized:
                 self.csv_file, header=0, names=["Share Name", "Price", "Profit"]
             )
         except FileNotFoundError:
-            print("File doesn't exist.")
+            print(f"No such file or directory: {self.csv_file}")
             exit(1)
         except UnicodeError:
-            print("The file isn't a csv file.")
+            print("File cannot be open, are you sure is it a csv file ?")
             exit(1)
         return brute_datas
 
@@ -56,7 +55,7 @@ class Optimized:
         self.datas.loc[len(self.datas)] = [
             share_name,
             price,
-            round(float(price * profit / 100), 2)
+            round(float(price * profit / 100), 2),
         ]
 
     # See knapsack problem to solve this problem
