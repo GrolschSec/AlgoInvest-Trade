@@ -17,7 +17,7 @@ class Bruteforce:
         Generate all the permutations from 1 to len(data).
         """
         i = 1
-        while i != len(self.data):
+        while i != len(self.data) + 1:
             perm = list(permutations(self.data.index, i))
             self.remove_duplicates(perm)
             print(f"Generated {len(self.list)} Combination !")
@@ -143,16 +143,16 @@ class Bruteforce:
                 self.data["Share"].iloc[share],
                 self.data["Price"].iloc[share],
                 self.data["Profit"].iloc[share],
-                other_data[i],
+                round(other_data[i], 2),
             ]
             i += 1
         df.loc[len(df)] = [
             "Total cost",
             other_data[0],
             "Total profit",
-            other_data[len(other_data) - 1],
+            round(other_data[len(other_data) - 1], 2),
         ]
-        df.to_csv("Best-Investment.csv")
+        df.to_csv("Best-Investment.csv", index=False)
 
     def force(self):
         """
