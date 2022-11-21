@@ -67,7 +67,7 @@ class Bruteforce:
         """
         for elm in self.list:
             total_price = self.get_money_invested(elm)
-            if total_price < 500:
+            if total_price < self.wallet:
                 self.dico.update({self.list.index(elm): [total_price]})
 
     def calculate_single_profit(self, elm):
