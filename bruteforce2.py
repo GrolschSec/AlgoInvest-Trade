@@ -36,7 +36,7 @@ class Bruteforce:
 
     def knapsack(self, solution, currentIndex, wallet):
         """
-        The Recursive way of the knapsack problem.
+        The Recursive way of solving the knapsack problem.
         Args:
             solution: an array containing the indexes that respect the constraint.
             currentIndex: the current index.
