@@ -1,6 +1,6 @@
 from pandas import DataFrame, read_csv
 from copy import copy
-from sys import argv, exit
+from sys import argv, exit, setrecursionlimit
 
 
 class Bruteforce:
@@ -42,7 +42,7 @@ class Bruteforce:
             currentIndex: the current index.
             wallet: the money available on the wallet.
         """
-        if currentIndex == 0 or wallet == 0:
+        if currentIndex < 0 or wallet == 0:
             return solution
         # res1 = self.knapsack(solution, currentIndex - 1, wallet)
         # res2 = None
