@@ -123,5 +123,5 @@ if __name__ == "__main__":
     if len(argv) != 2:
         print("Usage: python3 bruteforce2.py <csv_file>")
         exit(0)
-    brute = Bruteforce(argv[1], 500)
+    brute = Bruteforce(argv[1], 160)
     brute.force()
