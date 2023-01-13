@@ -1,95 +1,105 @@
-from pandas import DataFrame, read_csv
+from csv import reader
 from sys import exit, argv
+from magic import Magic
 
 
 class Optimized:
-    def __init__(self, csv_file):
-        self.datas = DataFrame(columns=["Share Name", "Price", "Profit", "Ratio"])
+    def __init__(self, csv_file, wallet=500):
         self.csv_file = csv_file
-        self.pre_data_treatment()
-        self.wallet = 500
-        self.solution = []
+        self.datas = self.pre_data_treatment()
+        self.wallet = wallet
+        self.best_investment = []
 
-    def filecheck(self):
+    def open_csv(self):
         """
-        This function open the csv file and handle error if the file doesn't exist or isn't a csv
-        Returns:
-            The data contained in the csv file.
+        Function that open a file and handle error like isADirectory and FileNotFound.
         """
-        brute_datas = None
         try:
-            brute_datas = read_csv(
-                self.csv_file, header=0, names=["Share Name", "Price", "Profit"]
-            )
+            return open(self.csv_file)
         except FileNotFoundError:
-            print(f"No such file or directory: {self.csv_file}")
+            print(f"No such file or directory: '{self.csv_file}'")
             exit(1)
-        except UnicodeError:
-            print("File cannot be open, are you sure is it a csv file ?")
+        except IsADirectoryError:
+            print(f"Is a directory: '{self.csv_file}'")
             exit(1)
-        return brute_datas
+
+    def mimecheck(self):
+        """
+        Function that check if the mimetype of a file is csv or not and exit the program if not.
+        """
+        mime = Magic(mime=True)
+        try:
+            if mime.from_file(self.csv_file) != "text/csv":
+                raise ValueError
+        except ValueError:
+            print("Invalid mimetype, the dataset should be a csv file.")
+            exit(1)
 
     def pre_data_treatment(self):
-        brute_datas = self.filecheck()
-        for i in range(0, len(brute_datas)):
-            if brute_datas.iloc[i].loc["Price"] <= 0:
+        """
+        This function is checking the datas in the csv file if there are correct like bigger than 0,
+        and return the new datas without the bad information.
+        Returns:
+            datas: the new list of shares without error.
+        """
+        datas = [[], [], []]
+        csv_file = self.open_csv()
+        self.mimecheck()
+        csv_reader = reader(csv_file)
+        for row in csv_reader:
+            if row[1].isalpha() is True and row[2].isalpha() is True:
                 pass
-            elif float(brute_datas.iloc[i].loc["Profit"]) <= 0:
+            elif float(row[1]) <= 0 or float(row[2]) <= 0:
                 pass
             else:
-                self.add_to_datas(
-                    brute_datas.iloc[i].loc["Share Name"],
-                    round(brute_datas.iloc[i].loc["Price"], 2),
-                    round(brute_datas.iloc[i].loc["Profit"], 2),
-                )
-        self.datas = self.datas.sort_values(
-            by=["Ratio"], ascending=False, ignore_index=True
-        )
-
-    def add_to_datas(self, share_name, price, profit):
-        """
-        Add the datas that passed the check before, and change the percentage profit to value profit.
-        Args:
-            share_name: The name of the share.
-            price: The price of the share.
-            profit: The profit of the share.
-        """
-        profit_val = round(float(price * profit / 100), 2)
-        ratio = profit_val / price * 100
-        self.datas.loc[len(self.datas)] = [share_name, price, profit_val, ratio]
+                datas[0].append(row[0])
+                datas[1].append(int(float(row[1]) * 100))
+                datas[2].append(float(float(row[1]) * float(row[2]) / 100))
+        return datas
 
     # See knapsack bottom-up problem to solve this problem
     # price = weight
     # profit = values
     # max_invest * 100 = capacity
-    def knapsack(self):
-        ks = [
-            [0 for _ in range(self.wallet + 1)] for _ in range(len(self.datas) + 1)
+    def knapsack(self, n, w_max):
+        matrix = [
+            [-1 for _ in range(0, w_max + 1)] for _ in range(0, len(self.datas[1]) + 1)
         ]
-        for row in range(len(self.datas + 1)):
-            for col in range(self.wallet + 1):
-                if row == 0 or col == 0:
-                    ks[row][col] = 0
-                elif col >= self.datas.iloc[row - 1].loc['Price']:
-                    value = (self.datas.iloc[row - 1].loc['Profit'] - self.datas.iloc[row - 1].loc['Price']) / (100 * accuracy)
-                    ks[row][col] = max(value + ks[row - 1][col - self.datas.iloc[row - 1].loc['Price']], ks[row][col])
+        for i in range(1, n + 1):
+            for w in range(1, w_max + 1):
+                if i == 0 or w == 0:
+                    matrix[i][w] = 0
+                elif float(self.datas[1][i - 1]) <= w:
+                    matrix[i][w] = max(
+                        self.datas[2][i - 1] + matrix[i - 1][w - self.datas[1][i - 1]],
+                        matrix[i - 1][w],
+                    )
                 else:
-                    ks[row][col] = ks[row - 1][col]
+                    matrix[i][w] = matrix[i - 1][w]
 
+        while w_max >= 0 and n >= 0:
+            if (
+                matrix[n][w_max]
+                == matrix[n - 1][w_max - self.datas[1][n - 1]] + self.datas[2][n - 1]
+            ):
+                self.best_investment.append(self.datas[0][n - 1])
+                w_max -= self.datas[1][n - 1]
+            n -= 1
 
-
-    def show_solution(self):
+    def show_result(self):
         total_cost = 0
         total_profit = 0
-        for elm in self.solution:
-            total_profit += self.datas.iloc[elm].loc["Profit"]
-            total_cost += self.datas.iloc[elm].loc["Price"]
-            print(
-                f"Share Name: {self.datas.iloc[elm].loc['Share Name']} | "
-                f"Price: {self.datas.iloc[elm].loc['Price']} | "
-                f"Profit: {self.datas.iloc[elm].loc['Profit']}"
-            )
-        print(f"Total cost: {total_cost} | Total profit: {total_profit}")
+        print("Share Name | Price | Profit (after 2 years)")
+        for elm in self.best_investment:
+            index = self.datas[0].index(elm)
+            total_cost += self.datas[1][index] / 100
+            total_profit += self.datas[2][index]
+            print(f"{elm} | {round(self.datas[1][index] / 100, 2)} € | {round(self.datas[2][index], 2)} €")
+        print(f"Total Cost: {total_cost} € | Total Profit (after 2 years): {round(total_profit, 2)} €")
+
+    def solve(self):
+        self.knapsack(len(self.datas[1]), self.wallet * 100)
+        self.show_result()
 
 
 if __name__ == "__main__":
@@ -98,5 +108,5 @@ if __name__ == "__main__":
         exit(1)
     else:
         optimized = Optimized(argv[1])
-        optimized.knapsack()
+        optimized.solve()
         exit(0)
