@@ -94,8 +94,12 @@ class Optimized:
             index = self.datas[0].index(elm)
             total_cost += self.datas[1][index] / 100
             total_profit += self.datas[2][index]
-            print(f"{elm} | {round(self.datas[1][index] / 100, 2)} € | {round(self.datas[2][index], 2)} €")
-        print(f"Total Cost: {total_cost} € | Total Profit (after 2 years): {round(total_profit, 2)} €")
+            print(
+                f"{elm} | {round(self.datas[1][index] / 100, 2)} € | {round(self.datas[2][index], 2)} €"
+            )
+        print(
+            f"Total Cost: {total_cost} € | Total Profit (after 2 years): {round(total_profit, 2)} €"
+        )
 
     def solve(self):
         self.knapsack(len(self.datas[1]), self.wallet * 100)
