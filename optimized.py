@@ -66,6 +66,13 @@ class Optimized:
     # profit = values
     # max_invest * 100 = capacity (* 100 to avoid float because we use it for index)
     def knapsack(self, n, w_max):
+        """
+        This function is the main algorithms to solve the knapsack and save the best investments
+        in self.best_investment().
+        Args:
+            n: The len of the dataset.
+            w_max: The maximum weight of the knapsack.
+        """
         matrix = [
             [-1 for _ in range(0, w_max + 1)] for _ in range(0, len(self.datas) + 1)
         ]
@@ -93,6 +100,9 @@ class Optimized:
             n -= 1
 
     def show_result(self):
+        """
+        This function print the result that we read from self.best_investment().
+        """
         total_cost = 0
         total_profit = 0
         print("Share Name | Price | Profit (after 2 years)")
@@ -109,6 +119,9 @@ class Optimized:
         )
 
     def solve(self):
+        """
+        This function solve and show the result of the knapsack problem.
+        """
         self.knapsack(len(self.datas), self.wallet * 100)
         self.show_result()
 
