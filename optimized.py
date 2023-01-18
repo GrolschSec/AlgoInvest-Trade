@@ -54,9 +54,9 @@ class Optimized:
             else:
                 datas.append(
                     {
-                        'Share': row[0],
-                        'Price': int(float(row[1]) * 100),
-                        'Profit': float(float(row[1]) * float(row[2]) / 100),
+                        "Share": row[0],
+                        "Price": int(float(row[1]) * 100),
+                        "Profit": float(float(row[1]) * float(row[2]) / 100),
                     }
                 )
         return datas
@@ -73,10 +73,10 @@ class Optimized:
             for w in range(1, w_max + 1):
                 if i == 0 or w == 0:
                     matrix[i][w] = 0
-                elif float(self.datas[i - 1]['Price']) <= w:
+                elif float(self.datas[i - 1]["Price"]) <= w:
                     matrix[i][w] = max(
-                        self.datas[i - 1]['Profit']
-                        + matrix[i - 1][w - self.datas[i - 1]['Price']],
+                        self.datas[i - 1]["Profit"]
+                        + matrix[i - 1][w - self.datas[i - 1]["Price"]],
                         matrix[i - 1][w],
                     )
                 else:
@@ -85,11 +85,11 @@ class Optimized:
         while w_max >= 0 and n >= 0:
             if (
                 matrix[n][w_max]
-                == matrix[n - 1][w_max - self.datas[n - 1]['Price']]
-                + self.datas[n - 1]['Profit']
+                == matrix[n - 1][w_max - self.datas[n - 1]["Price"]]
+                + self.datas[n - 1]["Profit"]
             ):
                 self.best_investment.append(n - 1)
-                w_max -= self.datas[n - 1]['Price']
+                w_max -= self.datas[n - 1]["Price"]
             n -= 1
 
     def show_result(self):
@@ -97,8 +97,8 @@ class Optimized:
         total_profit = 0
         print("Share Name | Price | Profit (after 2 years)")
         for elm in self.best_investment:
-            total_cost += self.datas[elm]['Price'] / 100
-            total_profit += self.datas[elm]['Profit']
+            total_cost += self.datas[elm]["Price"] / 100
+            total_profit += self.datas[elm]["Profit"]
             print(
                 f"{self.datas[elm]['Share']}"
                 f" | {round(self.datas[elm]['Price'] / 100, 2)} €"
