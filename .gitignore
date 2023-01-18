@@ -2,3 +2,4 @@ data
 .idea
 env
 *.odp
+.~lock.diapo.odp#
