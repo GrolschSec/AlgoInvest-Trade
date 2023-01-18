@@ -42,7 +42,7 @@ class Optimized:
         Returns:
             datas: the new list of shares without error.
         """
-        datas = [[], [], []]
+        datas = []
         csv_file = self.open_csv()
         self.mimecheck()
         csv_reader = reader(csv_file)
@@ -52,26 +52,31 @@ class Optimized:
             elif float(row[1]) <= 0 or float(row[2]) <= 0:
                 pass
             else:
-                datas[0].append(row[0])
-                datas[1].append(int(float(row[1]) * 100))
-                datas[2].append(float(float(row[1]) * float(row[2]) / 100))
+                datas.append(
+                    {
+                        'Share': row[0],
+                        'Price': int(float(row[1]) * 100),
+                        'Profit': float(float(row[1]) * float(row[2]) / 100),
+                    }
+                )
         return datas
 
     # See knapsack bottom-up problem to solve this problem
     # price = weight
     # profit = values
-    # max_invest * 100 = capacity
+    # max_invest * 100 = capacity (* 100 to avoid float because we use it for index)
     def knapsack(self, n, w_max):
         matrix = [
-            [-1 for _ in range(0, w_max + 1)] for _ in range(0, len(self.datas[1]) + 1)
+            [-1 for _ in range(0, w_max + 1)] for _ in range(0, len(self.datas) + 1)
         ]
         for i in range(1, n + 1):
             for w in range(1, w_max + 1):
                 if i == 0 or w == 0:
                     matrix[i][w] = 0
-                elif float(self.datas[1][i - 1]) <= w:
+                elif float(self.datas[i - 1]['Price']) <= w:
                     matrix[i][w] = max(
-                        self.datas[2][i - 1] + matrix[i - 1][w - self.datas[1][i - 1]],
+                        self.datas[i - 1]['Profit']
+                        + matrix[i - 1][w - self.datas[i - 1]['Price']],
                         matrix[i - 1][w],
                     )
                 else:
@@ -80,10 +85,11 @@ class Optimized:
         while w_max >= 0 and n >= 0:
             if (
                 matrix[n][w_max]
-                == matrix[n - 1][w_max - self.datas[1][n - 1]] + self.datas[2][n - 1]
+                == matrix[n - 1][w_max - self.datas[n - 1]['Price']]
+                + self.datas[n - 1]['Profit']
             ):
-                self.best_investment.append(self.datas[0][n - 1])
-                w_max -= self.datas[1][n - 1]
+                self.best_investment.append(n - 1)
+                w_max -= self.datas[n - 1]['Price']
             n -= 1
 
     def show_result(self):
@@ -91,18 +97,19 @@ class Optimized:
         total_profit = 0
         print("Share Name | Price | Profit (after 2 years)")
         for elm in self.best_investment:
-            index = self.datas[0].index(elm)
-            total_cost += self.datas[1][index] / 100
-            total_profit += self.datas[2][index]
+            total_cost += self.datas[elm]['Price'] / 100
+            total_profit += self.datas[elm]['Profit']
             print(
-                f"{elm} | {round(self.datas[1][index] / 100, 2)} € | {round(self.datas[2][index], 2)} €"
+                f"{self.datas[elm]['Share']}"
+                f" | {round(self.datas[elm]['Price'] / 100, 2)} €"
+                f" | {round(self.datas[elm]['Profit'], 2)} €"
             )
         print(
             f"Total Cost: {total_cost} € | Total Profit (after 2 years): {round(total_profit, 2)} €"
         )
 
     def solve(self):
-        self.knapsack(len(self.datas[1]), self.wallet * 100)
+        self.knapsack(len(self.datas), self.wallet * 100)
         self.show_result()
 
 
