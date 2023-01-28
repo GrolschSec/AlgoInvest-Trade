@@ -80,7 +80,7 @@ class Optimized:
             for w in range(1, w_max + 1):
                 if i == 0 or w == 0:
                     matrix[i][w] = 0
-                elif float(self.datas[i - 1]["Price"]) <= w:
+                elif self.datas[i - 1]["Price"] <= w:
                     matrix[i][w] = max(
                         self.datas[i - 1]["Profit"]
                         + matrix[i - 1][w - self.datas[i - 1]["Price"]],
