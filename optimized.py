@@ -76,18 +76,18 @@ class Optimized:
         matrix = [
             [-1 for _ in range(0, w_max + 1)] for _ in range(0, len(self.datas) + 1)
         ]
-        for i in range(1, n + 1):
-            for w in range(1, w_max + 1):
-                if i == 0 or w == 0:
-                    matrix[i][w] = 0
-                elif self.datas[i - 1]["Price"] <= w:
-                    matrix[i][w] = max(
-                        self.datas[i - 1]["Profit"]
-                        + matrix[i - 1][w - self.datas[i - 1]["Price"]],
-                        matrix[i - 1][w],
+        for row in range(1, n + 1):
+            for col in range(1, w_max + 1):
+                if row == 0 or col == 0:
+                    matrix[row][col] = 0
+                elif self.datas[row - 1]["Price"] <= col:
+                    matrix[row][col] = max(
+                        self.datas[row - 1]["Profit"]
+                        + matrix[row - 1][col - self.datas[row - 1]["Price"]],
+                        matrix[row - 1][col],
                     )
                 else:
-                    matrix[i][w] = matrix[i - 1][w]
+                    matrix[row][col] = matrix[row - 1][col]
 
         while w_max >= 0 and n >= 0:
             if (
